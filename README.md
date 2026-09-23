@@ -1,6 +1,6 @@
 # HRHOT Agent Skill
 
-让 Claude Code / Codex 等 Agent 用中文查询 [HRHOT](https://hrhot.gaiying.top)（全国 HR 资讯聚合站）的公开数据：过去 24 小时 HR 要闻、新政发布、HR 日报、主题/地区检索、生效倒计时。
+让 Claude Code / Codex / WorkBuddy / 豆包等 AI Agent 用中文查询 [HRHOT](https://hrhot.gaiying.top)（全国 HR 资讯聚合站）的公开数据：过去 24 小时 HR 要闻、新政发布、HR 日报、主题/地区检索、生效倒计时。
 
 本 skill 是**零脚本 skill**：不在本地执行任何代码，全部能力是对 HRHOT 公开只读 API（`/api/v1/*`，匿名、无需 API Key）的调用规范。
 
@@ -28,7 +28,7 @@ Agent 会调用 HRHOT 公开 API 并返回结构化中文简报：
 
 ### 1. 提示词安装（推荐）
 
-把下面这句话发给你的 Agent（Claude Code / Codex 等）：
+把下面这句话发给你的 Agent（Claude Code / Codex / WorkBuddy / 豆包等）：
 
 ```
 请安装 HRHOT Skill：https://hrhot.gaiying.top/hrhot-skill/README.md
