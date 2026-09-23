@@ -1,0 +1,14 @@
+# Codex 兼容声明：本 skill 为零脚本 skill，能力全部为对 HRHOT 公开只读 API 的调用规范
+name: hrhot
+version: 1.0.0
+entry: SKILL.md
+interface:
+  display_name: HRHOT HR 资讯
+  short_description: 用中文查询全国 HR 资讯：24 小时要闻、新政发布、HR 日报、主题与地区检索
+  default_prompt: 使用 hrhot 总结过去 24 小时最重要的 HR 动态。
+capabilities:
+  - http-get            # 仅匿名 GET 只读请求
+sandbox: none            # 不在本地执行任何脚本
+network:
+  allowed_hosts:
+    - hrhot.gaiying.top
