@@ -1,0 +1,31 @@
+name: verify-mirror
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 1 * * *' # 每日 UTC 01:00（北京时间 09:00）
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch live copy and verify byte-identity
+        run: |
+          BASE="https://hrhot.gaiying.top/hrhot-skill"
+          curl -fsSL "$BASE/manifest.sha256" -o live-manifest.sha256
+          # 逐文件下载线上副本（保留 manifest 内相对路径结构；兼容 '*file' 二进制标记）
+          awk '{ f = $2; sub(/^\*/, "", f); print f }' live-manifest.sha256 | while read -r f; do
+            mkdir -p "$(dirname "live/$f")"
+            curl -fsSL "$BASE/$f" -o "live/$f"
+          done
+          # 1) 线上副本逐文件验签（证明线上副本自洽）
+          (cd live && sha256sum -c ../live-manifest.sha256)
+          # 2) 线上副本与本仓库逐文件比对（证明镜像与站内字节一致）
+          awk '{ f = $2; sub(/^\*/, "", f); print f }' live-manifest.sha256 | while read -r f; do
+            diff -q "$f" "live/$f" || { echo "MISMATCH: $f"; exit 1; }
+          done
+          echo "OK: GitHub mirror is byte-identical to live copy."

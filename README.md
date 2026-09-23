@@ -43,17 +43,35 @@ curl -fsSL https://hrhot.gaiying.top/hrhot-skill/install.sh | bash -s -- --targe
 ```
 
 - 安装到 `~/.agents/skills/hrhot`，并在 `~/.claude/skills/hrhot` 建立软链（不复制第二份）。
+- **WorkBuddy 用户**请使用：
+
+  ```bash
+  curl -fsSL https://hrhot.gaiying.top/hrhot-skill/install.sh | bash -s -- --target workbuddy
+  ```
+
+  安装到 `~/.workbuddy/skills/hrhot`，装完热加载生效，无需重启客户端。
 - Windows 请使用 **Git Bash** 执行。
 - 安装器会先下载 `manifest.sha256` 清单，按白名单逐文件下载并**即时校验 SHA-256**，校验通过后才原子替换目标目录；任何一步失败自动回滚，不留半成品。
-- 更多选项：`install.sh --help`（支持 `--target agents|claude`、`--dir`、`--base`、`--migrate-legacy`、`--force`）。
+- 更多选项：`install.sh --help`（支持 `--target agents|claude|workbuddy`、`--dir`、`--base`、`--migrate-legacy`、`--force`）。
 
-### 3. git clone
+#### 安装器本体校验（推荐）
+
+`curl | bash` 信任的是传输通道；更稳妥的做法是**先下载、比对官方公布的 SHA-256、再本地执行**（manifest 只保护包内 7 个文件，保护不了校验者自己）：
+
+```bash
+curl -fsSL https://hrhot.gaiying.top/hrhot-skill/install.sh -o install.sh
+sha256sum install.sh   # 应输出：b472ce5da76cb8af12c86178b3675559e37dd32aec93a9bcdae74417f6c0263b
+bash install.sh --target claude
+```
+
+### 3. git clone（固定版本 tag）
 
 ```bash
 git clone https://github.com/Neo5093/hrhot-skills.git ~/.agents/skills/hrhot
+git -C ~/.agents/skills/hrhot checkout v1.0.0
 ```
 
-（Windows 用 Git Bash；克隆的是 GitHub 镜像，与站内托管副本字节一致。）
+（Windows 用 Git Bash；克隆后固定到发布 tag `v1.0.0`，该 tag 的内容与站内托管副本字节一致——避免仓库主分支变动导致装到未审计版本。WorkBuddy 用户将目标目录换为 `~/.workbuddy/skills/hrhot`。）
 
 ## 能做什么 / 不能做什么
 

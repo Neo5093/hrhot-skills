@@ -12,10 +12,11 @@
 #   6. 原子替换（暂存目录与目标同文件系统 -> mv rename；失败 trap 回滚）
 #   7. 软链（--target claude -> ~/.claude/skills/hrhot 指向目标目录，不复制第二份；
 #            软链不可用时兜底 Windows 目录联接 mklink /J）
+#      --target workbuddy -> 直接安装到 ~/.workbuddy/skills/hrhot（WorkBuddy 客户端技能目录，热加载）
 #   8. 清理与输出（trap 保证不留半成品；中断信号同样回滚）
 #
 # 用法:
-#   install.sh [--target agents|claude] [--dir <path>] [--base <url>]
+#   install.sh [--target agents|claude|workbuddy] [--dir <path>] [--base <url>]
 #              [--migrate-legacy] [--force] [--help]
 #
 # 说明:
@@ -37,8 +38,9 @@ EXPECTED_FILES="SKILL.md README.md LICENSE install.sh agents/openai.yaml referen
 EXPECTED_COUNT=7          # manifest 内文件数；连同 manifest.sha256 自身，安装后共 8 个文件
 INSTALLED_FILE_COUNT=8
 
-# 旧副本检测点（真实目录/文件即视为旧副本；已指向本目标的链接除外）
-LEGACY_SPOTS="$HOME/.claude/skills/$SKILL_NAME $HOME/.codex/skills/$SKILL_NAME"
+# 旧副本检测点（真实目录/文件即视为旧副本；已指向本目标的链接除外；
+# 含 ~/.workbuddy/skills（WorkBuddy 技能目录）——--target workbuddy 时 check_legacy_spots 会自动跳过自身）
+LEGACY_SPOTS="$HOME/.claude/skills/$SKILL_NAME $HOME/.codex/skills/$SKILL_NAME $HOME/.workbuddy/skills/$SKILL_NAME"
 
 # ---------- 运行态变量 ----------
 TARGET="agents"
@@ -71,11 +73,14 @@ HRHOT Agent Skill 安装器
              [--migrate-legacy] [--force] [--help]
 
 选项:
-  --target agents|claude  安装目标（默认 agents）。
+  --target agents|claude|workbuddy
+                          安装目标（默认 agents）。
                           agents: 安装到 ~/.agents/skills/hrhot
                           claude: 同上，并在 ~/.claude/skills/hrhot 建立指向目标目录的软链
                                   （不复制第二份；软链不可用时自动兜底为目录联接）
-  --dir <path>            自定义安装目录（默认 ~/.agents/skills/hrhot）
+                          workbuddy: 安装到 ~/.workbuddy/skills/hrhot（WorkBuddy 客户端技能目录，
+                                  安装后热加载生效，无需重启）
+  --dir <path>            自定义安装目录（默认见 --target 说明）
   --base <url>            托管基地址（默认 https://hrhot.gaiying.top/hrhot-skill）
   --migrate-legacy        检测到旧副本时，将旧目录备份为 <dir>.bak-<时间戳> 后继续安装
   --force                 已安装时强制重装（同样会备份旧目录）
@@ -247,8 +252,8 @@ done
 
 [ -n "$OPT_BASE" ] && BASE_URL="$OPT_BASE"
 case "$TARGET" in
-  agents|claude) ;;
-  *) die "--target 仅支持 agents 或 claude（收到: $TARGET）" ;;
+  agents|claude|workbuddy) ;;
+  *) die "--target 仅支持 agents、claude 或 workbuddy（收到: $TARGET）" ;;
 esac
 
 # 去掉基地址末尾斜杠，避免双斜杠
@@ -271,7 +276,10 @@ fi
 # ---------- 目标目录解析 ----------
 
 if [ -z "$TARGET_DIR" ]; then
-  TARGET_DIR="$HOME/.agents/skills/$SKILL_NAME"
+  case "$TARGET" in
+    workbuddy) TARGET_DIR="$HOME/.workbuddy/skills/$SKILL_NAME" ;;
+    *)         TARGET_DIR="$HOME/.agents/skills/$SKILL_NAME" ;;
+  esac
 fi
 case "$TARGET_DIR" in
   /*) ;;
