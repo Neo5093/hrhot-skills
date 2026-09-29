@@ -60,7 +60,7 @@ curl -fsSL https://hrhot.gaiying.top/hrhot-skill/install.sh | bash -s -- --targe
 
 ```bash
 curl -fsSL https://hrhot.gaiying.top/hrhot-skill/install.sh -o install.sh
-sha256sum install.sh   # 应输出：b472ce5da76cb8af12c86178b3675559e37dd32aec93a9bcdae74417f6c0263b
+sha256sum install.sh   # 应输出：f610a9bfc122d4f141e2c94ec9ffbd4e7be43a53ba42dcc5768ebe0a33ee9cf0
 bash install.sh --target claude
 ```
 
@@ -68,10 +68,10 @@ bash install.sh --target claude
 
 ```bash
 git clone https://github.com/Neo5093/hrhot-skills.git ~/.agents/skills/hrhot
-git -C ~/.agents/skills/hrhot checkout v1.0.0
+git -C ~/.agents/skills/hrhot checkout v2.0.0
 ```
 
-（Windows 用 Git Bash；克隆后固定到发布 tag `v1.0.0`，该 tag 的内容与站内托管副本字节一致——避免仓库主分支变动导致装到未审计版本。WorkBuddy 用户将目标目录换为 `~/.workbuddy/skills/hrhot`。）
+（Windows 用 Git Bash；克隆后固定到发布 tag `v2.0.0`，该 tag 的内容与站内托管副本字节一致——避免仓库主分支变动导致装到未审计版本。WorkBuddy 用户将目标目录换为 `~/.workbuddy/skills/hrhot`。）
 
 ## 能做什么 / 不能做什么
 
@@ -81,6 +81,7 @@ git -C ~/.agents/skills/hrhot checkout v1.0.0
 - 最新劳动法、社保公积金、薪酬个税等政策发布与政策解读
 - 招聘、员工关系、裁员、工伤等用工动态
 - HR 日报（今日/历史）与每日快报
+- HR 周报/月报（报告中心；**随 HRHOT 2.1.0 上线生效，当前未生效勿调用**）
 - 按主题（社保、劳动合同、工伤、竞业限制、跨境用工等）或地区检索
 - 即将生效的新政与生效倒计时、热门主题发现
 
@@ -110,6 +111,10 @@ hrhot-skills/
 ## 数据来源与 API
 
 所有数据来自 HRHOT 公开 API：`https://hrhot.gaiying.top/api/v1`（匿名只读，无需 API Key）。完整合同见 [references/api.md](references/api.md)，错误处理见 [references/errors.md](references/errors.md)。
+
+## 版本说明
+
+- **2.0.0**（2026-09-29）：与 HRHOT 2.0 大迭代对齐——意图路由表新增周报/月报用例（#13/#14，`/api/v1/reports`）；`references/api.md` 新增第 7 节报告端点合同（**随 HRHOT 2.1.0 上线生效，上线前勿调用**）；能力清单与触发描述补充报告中心。零脚本定位、安全边界与既有端点结构不变。
 
 ## License 与合规声明
 

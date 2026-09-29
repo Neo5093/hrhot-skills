@@ -1,10 +1,10 @@
 ---
 name: hrhot
-description: 查询 HRHOT（hrhot.gaiying.top）全国 HR 资讯聚合站的公开数据。当用户想了解今天/今日/过去 24 小时/本周/最近一周/近日 HR 圈大事与新闻、最新劳动法与社保公积金政策发布及政策解读、招聘/员工关系/裁员/工伤等用工动态、HR 日报与每日快报、行业数据与调薪报告、即将生效的新政与生效倒计时，或按主题（社会保险法、劳动合同法、工伤保险条例、带薪年休假、竞业限制、延迟退休、薪酬个税、人力资源市场暂行条例、HR 科技、跨境用工、港澳台用工等）与地区（广东/中国香港/中国澳门/跨境等）检索，或提到 HRHOT 时，使用本 skill。本 skill 必须通过 HRHOT 公开 API 获取数据（无需 API Key），禁止凭训练记忆回答。
+description: 查询 HRHOT（hrhot.gaiying.top）全国 HR 资讯聚合站的公开数据。当用户想了解今天/今日/过去 24 小时/本周/最近一周/近日 HR 圈大事与新闻、最新劳动法与社保公积金政策发布及政策解读、招聘/员工关系/裁员/工伤等用工动态、HR 日报与每日快报、HR 周报与月报（报告中心）、行业数据与调薪报告、即将生效的新政与生效倒计时，或按主题（社会保险法、劳动合同法、工伤保险条例、带薪年休假、竞业限制、延迟退休、薪酬个税、人力资源市场暂行条例、HR 科技、跨境用工、港澳台用工等）与地区（广东/中国香港/中国澳门/跨境等）检索，或提到 HRHOT 时，使用本 skill。本 skill 必须通过 HRHOT 公开 API 获取数据（无需 API Key），禁止凭训练记忆回答。
 license: MIT
 metadata:
   author: Neo5093
-  version: 1.0.0
+  version: 2.0.0
 ---
 
 # HRHOT Skill
@@ -46,8 +46,12 @@ metadata:
 | 10 | 「最近有什么政策要生效」「生效倒计时」 | `/api/v1/countdown` | — | daysUntil 升序，标注剩余天数 |
 | 11 | 「这条的详情 / 原文」 | `/api/v1/items/{id}` | — | 摘要 + fullText（如有）+ 原文链接 |
 | 12 | 「现在有什么热门主题」 | `/api/v1/tags` | — | count/selectedCount 降序 Top N |
+| 13 | 「本周有哪些 HR 政策？」「本周 HR 要闻回顾」 | `/api/v1/reports` | `kind=weekly` | 当期周报（lead 综述 + 分区 + 统计）；跨多期先取列表再按期次取详情 |
+| 14 | 「给我看上月 HR 月报」「上个月盘点」 | `/api/v1/reports` | `kind=monthly` → `/api/v1/reports/{key}` | 先列表定位目标期次（periodStart/periodEnd），再取该期详情 |
 
 Base URL 统一为 `https://hrhot.gaiying.top/api/v1`；端点参数、字段语义与错误处理详见 `references/api.md` 与 `references/errors.md`。
+
+**报告端点提示**：#13 / #14 走 `GET /api/v1/reports`（周报/月报，详见 `references/api.md` 第 7 节）。该端点**随 HRHOT 2.1.0 上线**，上线前调用返回 404——上线前不要向用户承诺周报/月报查询能力；上线后 `lead` 为 AI 生成综述，引用前必须回原文核对。
 
 **受控词表提示**：`tag` 必须使用受控词表规范词（如「社会保险法」「劳动合同法」「工伤保险条例」「带薪年休假」「人力资源市场暂行条例」）；可用 `/api/v1/tags` 发现热门主题的规范写法，不要自造同义词（如「五险一金」「劳动法」均非规范 tag，应走 `q` 搜索）。
 

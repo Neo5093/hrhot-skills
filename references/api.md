@@ -40,6 +40,7 @@
 | 4 | GET | `/api/v1/dailies/{date}` | 指定日期日报全文 |
 | 5 | GET | `/api/v1/tags` | 主题标签聚合（热门主题发现） |
 | 6 | GET | `/api/v1/countdown` | 即将生效的政策（生效日升序） |
+| 7 | GET | `/api/v1/reports`、`/api/v1/reports/{key}` | 周报/月报（**随 2.1.0 上线，当前未生效勿调用**，见第 7 节） |
 
 ## 3. `GET /api/v1/items`
 
@@ -49,7 +50,7 @@
 | --- | --- | --- | --- | --- |
 | `mode` | enum | `selected` | `selected` \| `all` | selected=仅精选；all=全部已收录 |
 | `window` | enum | 无（不过滤） | `24h` \| `72h` \| `7d` \| `30d` | 按 `discoveredAt` 过滤：`discoveredAt >= now - window`。**「过去 24 小时」类问题的核心参数** |
-| `category` | enum | 无 | 七分类之一（见第 7 节） | 非法值 400 `invalid-param` |
+| `category` | enum | 无 | 七分类之一（见第 8 节） | 非法值 400 `invalid-param` |
 | `region` | string | 无 | 自由文本（现存值：全国 / 省名 / 中国香港 / 中国澳门 / 跨境） | 与站内一致，不做枚举校验 |
 | `tag` | string | 无 | 1-40 字，大小写不敏感精确匹配 | 主题精确过滤，须用受控词表规范词 |
 | `q` | string | 无 | 2-200 字 | 搜索标题/摘要/标签/来源名 |
@@ -198,7 +199,96 @@
 
 - `daysUntil >= 0`，按生效日升序（剩余天数少的在前）。
 
-## 7. 七分类枚举与受控词表
+## 7. 报告端点：`GET /api/v1/reports` 与 `/api/v1/reports/{key}`
+
+> ⚠️ **随 HRHOT 2.1.0 上线，当前未生效勿调用**（上线前请求返回 404 `not-found`）。2.1.0 上线后移除本标注。
+
+周报（weekly）与月报（monthly）为 HRHOT 编辑成品的周期报告，与 `/api/v1/dailies` 的日报并列；入口见站内报告中心 `/reports`。
+
+### 列表 `GET /api/v1/reports?kind=weekly|monthly`
+
+| 参数 | 类型 | 默认 | 约束 | 说明 |
+| --- | --- | --- | --- | --- |
+| `kind` | enum | 无（必填） | `weekly` \| `monthly` | 报告类型；缺失或非法 400 `invalid-param` |
+| `limit` | int | 12 | 1-52 | 每页期数 |
+| `cursor` | string | 无 | 上一页 `page.nextCursor` 原样回传 | 游标分页；跨查询复用 400 `invalid-cursor` |
+
+响应 200（按 `periodStart` 倒序，最新一期在前）：
+
+```json
+{
+  "schemaVersion": 2,
+  "kind": "weekly",
+  "count": 12,
+  "items": [
+    {
+      "key": "2026-W39",
+      "title": "HRHOT 周报 · 2026 年第 39 周",
+      "periodStart": "2026-09-21",
+      "periodEnd": "2026-09-27",
+      "generatedAt": "2026-09-28T08:00:00.000Z",
+      "links": {
+        "api": "/api/v1/reports/2026-W39",
+        "hrhot": "https://hrhot.gaiying.top/reports/2026-W39"
+      }
+    }
+  ],
+  "page": { "count": 12, "hasMore": false, "nextCursor": null }
+}
+```
+
+`key` 为报告期次标识（opaque string，仅从列表响应获取，**不要自行拼日期猜测**）。
+
+### 单期 `GET /api/v1/reports/{key}`
+
+响应 200：
+
+```json
+{
+  "schemaVersion": 2,
+  "report": {
+    "key": "2026-W39",
+    "kind": "weekly",
+    "title": "HRHOT 周报 · 2026 年第 39 周",
+    "periodStart": "2026-09-21",
+    "periodEnd": "2026-09-27",
+    "generatedAt": "2026-09-28T08:00:00.000Z",
+    "lead": "本期 AI 综述导语（**AI 生成，引用前须回原文核对**）",
+    "sections": [
+      { "category": "政策法规发布", "items": [ <HotItem + links，与 items 端点同构> ] }
+    ],
+    "stats": {
+      "totalSelected": 42,
+      "byCategory": { "政策法规发布": 12 },
+      "topTags": [ { "tag": "社会保险法", "count": 6 } ],
+      "vsPrev": { "totalSelectedDelta": 5 },
+      "sourceTop": [ { "sourceName": "人力资源社会保障部", "count": 7 } ]
+    }
+  }
+}
+```
+
+字段语义：
+
+| 字段 | 含义 |
+| --- | --- |
+| `lead` | 本期 AI 综述导语。**免责：lead 为 AI 生成综述，引用前须回原文核对** |
+| `sections` | 按七分类分组的条目区；`items[]` 与 items 端点同构（含 `links.hrhot`），逐条摘要同为 AI 生成 |
+| `stats.totalSelected` | 本期精选条目总数 |
+| `stats.byCategory` | 七分类 → 条数映射 |
+| `stats.topTags` | 本期热词 Top N（tag + count，降序） |
+| `stats.vsPrev` | 与上期对比摘要（如精选数环比）；子字段以 2.1.0 上线实现为准 |
+| `stats.sourceTop` | 本期信源 Top N（来源名 + 条数，降序） |
+
+### 错误分支
+
+| HTTP | type | 触发条件 |
+| --- | --- | --- |
+| 400 | `invalid-param` | `kind` 缺失或非法 |
+| 404 | `not-found` | 期次 `key` 不存在；或 2.1.0 上线前调用（端点未生效） |
+| 429 | `rate-limited` | 平台限流触发，带 `Retry-After` 头 |
+
+## 8. 七分类枚举与受控词表
 
 **category 参数合法值（七分类）**：
 
@@ -212,7 +302,7 @@
 
 **tag 受控词表**：`tag` 参数必须使用规范词，样例：`社会保险法`、`劳动合同法`、`工伤保险条例`、`带薪年休假`、`人力资源市场暂行条例`。获取完整热门规范词的方式：调用 `/api/v1/tags`，取 `items[].tag` 字段。用户口语词（如「五险一金」「劳动法」「退休」）**不要**直接作为 `tag`，应改用 `q` 搜索（`mode=all&q=<词>`）。
 
-## 8. HotItem 字段全表
+## 9. HotItem 字段全表
 
 | 字段 | 类型 | 可空 | 含义 |
 | --- | --- | --- | --- |
@@ -237,17 +327,17 @@
 | `hrFocus` | string \| null | 是 | HR 关注点 |
 | `impacts` | string[] | 是 | 影响对象（如 `["企业HR", "劳动者"]`） |
 | `tags` | string[] | 是 | 主题标签（受控词表规范词） |
-| `links` | object | 否 | 链接对象，见第 9 节 |
+| `links` | object | 否 | 链接对象，见第 10 节 |
 
 注：公开 API **不输出**内部字段 `fullTextPath`；`fullText` 仅在 `/api/v1/items/{id}` 详情端点输出。
 
-## 9. `links.hrhot` 约定
+## 10. `links.hrhot` 约定
 
 - `links.hrhot` = 条目在 HRHOT 站内的阅读页 URL（`https://hrhot.gaiying.top/items/<id>`），**匿名（未登录）可直接打开**。
 - 所有对外输出的简报，每条引用**必须**带 `links.hrhot`（推荐同时附 `links.source` / `sourceUrl` 原文链接）。
 - `links.source` 与 `sourceUrl` 等价，取其一即可。
 
-## 10. 频率礼仪与 429 约定
+## 11. 频率礼仪与 429 约定
 
 - 单次用户提问最多发起约 5 个 API 请求；需要翻页时用 `page.nextCursor` 续拉，不要放大 `limit` 反复拉全量。
 - 如收到 429：按 `Retry-After` 头退避后重试，最多累计等待 60 秒；仍失败则告知用户「HRHOT 服务暂时繁忙，请稍后再试」。
