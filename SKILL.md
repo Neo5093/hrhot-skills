@@ -51,7 +51,7 @@ metadata:
 
 Base URL 统一为 `https://hrhot.gaiying.top/api/v1`；端点参数、字段语义与错误处理详见 `references/api.md` 与 `references/errors.md`。
 
-**报告端点提示**：#13 / #14 走 `GET /api/v1/reports`（周报/月报，详见 `references/api.md` 第 7 节）。该端点**随 HRHOT 2.1.0 上线**，上线前调用返回 404——上线前不要向用户承诺周报/月报查询能力；上线后 `lead` 为 AI 生成综述，引用前必须回原文核对。
+**报告端点提示**：#13 / #14 走 `GET /api/v1/reports`（周报/月报，详见 `references/api.md` 第 7 节）。`lead` 为 AI 生成综述，引用前必须回原文核对。
 
 **受控词表提示**：`tag` 必须使用受控词表规范词（如「社会保险法」「劳动合同法」「工伤保险条例」「带薪年休假」「人力资源市场暂行条例」）；可用 `/api/v1/tags` 发现热门主题的规范写法，不要自造同义词（如「五险一金」「劳动法」均非规范 tag，应走 `q` 搜索）。
 

@@ -40,7 +40,7 @@
 | 4 | GET | `/api/v1/dailies/{date}` | 指定日期日报全文 |
 | 5 | GET | `/api/v1/tags` | 主题标签聚合（热门主题发现） |
 | 6 | GET | `/api/v1/countdown` | 即将生效的政策（生效日升序） |
-| 7 | GET | `/api/v1/reports`、`/api/v1/reports/{key}` | 周报/月报（**随 2.1.0 上线，当前未生效勿调用**，见第 7 节） |
+| 7 | GET | `/api/v1/reports`、`/api/v1/reports/{key}` | 周报/月报（报告中心，见第 7 节） |
 
 ## 3. `GET /api/v1/items`
 
@@ -201,16 +201,14 @@
 
 ## 7. 报告端点：`GET /api/v1/reports` 与 `/api/v1/reports/{key}`
 
-> ⚠️ **随 HRHOT 2.1.0 上线，当前未生效勿调用**（上线前请求返回 404 `not-found`）。2.1.0 上线后移除本标注。
-
 周报（weekly）与月报（monthly）为 HRHOT 编辑成品的周期报告，与 `/api/v1/dailies` 的日报并列；入口见站内报告中心 `/reports`。
 
 ### 列表 `GET /api/v1/reports?kind=weekly|monthly`
 
 | 参数 | 类型 | 默认 | 约束 | 说明 |
 | --- | --- | --- | --- | --- |
-| `kind` | enum | 无（必填） | `weekly` \| `monthly` | 报告类型；缺失或非法 400 `invalid-param` |
-| `limit` | int | 12 | 1-52 | 每页期数 |
+| `kind` | enum | `weekly` | `weekly` \| `monthly` | 报告类型；非法值 400 `invalid-param` |
+| `limit` | int | 12 | 1-60 | 每页期数 |
 | `cursor` | string | 无 | 上一页 `page.nextCursor` 原样回传 | 游标分页；跨查询复用 400 `invalid-cursor` |
 
 响应 200（按 `periodStart` 倒序，最新一期在前）：
@@ -222,14 +220,14 @@
   "count": 12,
   "items": [
     {
-      "key": "2026-W39",
+      "key": "2026W39",
       "title": "HRHOT 周报 · 2026 年第 39 周",
       "periodStart": "2026-09-21",
       "periodEnd": "2026-09-27",
       "generatedAt": "2026-09-28T08:00:00.000Z",
       "links": {
-        "api": "/api/v1/reports/2026-W39",
-        "hrhot": "https://hrhot.gaiying.top/reports/2026-W39"
+        "api": "/api/v1/reports/2026W39",
+        "hrhot": "https://hrhot.gaiying.top/reports/2026W39"
       }
     }
   ],
@@ -247,7 +245,7 @@
 {
   "schemaVersion": 2,
   "report": {
-    "key": "2026-W39",
+    "key": "2026W39",
     "kind": "weekly",
     "title": "HRHOT 周报 · 2026 年第 39 周",
     "periodStart": "2026-09-21",
@@ -277,7 +275,7 @@
 | `stats.totalSelected` | 本期精选条目总数 |
 | `stats.byCategory` | 七分类 → 条数映射 |
 | `stats.topTags` | 本期热词 Top N（tag + count，降序） |
-| `stats.vsPrev` | 与上期对比摘要（如精选数环比）；子字段以 2.1.0 上线实现为准 |
+| `stats.vsPrev` | 与上期对比:{key, prev, curr, delta, pct}（上期为 0 时 pct 省略） |
 | `stats.sourceTop` | 本期信源 Top N（来源名 + 条数，降序） |
 
 ### 错误分支
@@ -285,7 +283,7 @@
 | HTTP | type | 触发条件 |
 | --- | --- | --- |
 | 400 | `invalid-param` | `kind` 缺失或非法 |
-| 404 | `not-found` | 期次 `key` 不存在；或 2.1.0 上线前调用（端点未生效） |
+| 404 | `not-found` | 期次 `key` 不存在 |
 | 429 | `rate-limited` | 平台限流触发，带 `Retry-After` 头 |
 
 ## 8. 七分类枚举与受控词表
