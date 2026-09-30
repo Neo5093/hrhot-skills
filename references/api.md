@@ -41,6 +41,7 @@
 | 5 | GET | `/api/v1/tags` | 主题标签聚合（热门主题发现） |
 | 6 | GET | `/api/v1/countdown` | 即将生效的政策（生效日升序） |
 | 7 | GET | `/api/v1/reports`、`/api/v1/reports/{key}` | 周报/月报（报告中心，见第 7 节） |
+| 8 | GET | `/api/v1/hot-topics` | 热点榜 Top 10（48h 聚合事件，heat 降序，见第 12 节） |
 
 ## 3. `GET /api/v1/items`
 
@@ -340,3 +341,58 @@
 - 单次用户提问最多发起约 5 个 API 请求；需要翻页时用 `page.nextCursor` 续拉，不要放大 `limit` 反复拉全量。
 - 如收到 429：按 `Retry-After` 头退避后重试，最多累计等待 60 秒；仍失败则告知用户「HRHOT 服务暂时繁忙，请稍后再试」。
 - 正常请求建议带 `Cache-Control` 语义由服务端 CDN 兜底（`s-maxage=60`），短时间内重复查询请复用已获取的结果，不要打重复请求。
+
+## 12. `GET /api/v1/hot-topics`（热点榜）
+
+多信源报道的同一事件聚合榜：过去 48 小时窗口，按热度指数（heat）降序，固定 Top 10。与站内 `/hot` 页同源同算法。
+
+### 查询参数
+
+无。不接受任何查询参数（传入任意参数返回 400 `invalid-param`）。窗口固定 `48h`，暂无其他窗口。
+
+### 响应示例
+
+```json
+{
+  "schemaVersion": 2,
+  "count": 10,
+  "window": "48h",
+  "items": [
+    {
+      "rank": 1,
+      "title": "多部门联合发布新业态劳动者权益保障指引",
+      "heat": 87,
+      "badges": ["surge"],
+      "memberCount": 14,
+      "uniqueSourceCount": 9,
+      "links": { "hrhot": "https://hrhot.gaiying.top/events/evt_x1" }
+    }
+  ]
+}
+```
+
+### 字段表
+
+| 字段 | 类型 | 可空 | 含义 |
+| --- | --- | --- | --- |
+| `schemaVersion` | int | 否 | 固定 `2`（字段只增不改） |
+| `count` | int | 否 | 返回条数（≤10；无热点事件时为 0，`items` 为空数组） |
+| `window` | string | 否 | 统计窗口，固定 `48h` |
+| `items[].rank` | int | 否 | 名次（1 起，heat 降序） |
+| `items[].title` | string | 否 | 聚合事件标题（多信源报道的同一事件） |
+| `items[].heat` | int | 否 | 热度指数（取整）。算法：独立信源去重 × 信源层级系数 × 24h 半衰期衰减；衡量讨论活跃度，不是报道质量评分 |
+| `items[].badges` | string[] | 否 | 状态徽标（可共存）：`surge`（近 6 小时讨论快速增加）/ `new`（首条报道 6 小时内）/ `rising`（热度较上一轮上行）。无则空数组 |
+| `items[].memberCount` | int | 否 | 该事件收录的报道条数 |
+| `items[].uniqueSourceCount` | int | 否 | 独立信源数（去重） |
+| `items[].links.hrhot` | string | 否 | 站内事件页 URL（`/events/{id}`），匿名可打开；事件页含各方报道明细 |
+
+### 缓存
+
+`Cache-Control: public, max-age=0, s-maxage=30, stale-while-revalidate=300` + 弱 ETag（304 语义与其他端点一致）。数据每 2 小时采集一轮、榜单 30 秒级刷新，不要更密轮询。
+
+### 错误分支
+
+| HTTP | type | 触发条件 |
+| --- | --- | --- |
+| 400 | `invalid-param` | 传入任何查询参数 |
+| 500 | `internal` | 上游数据暂不可用 |

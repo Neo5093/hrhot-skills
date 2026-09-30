@@ -52,6 +52,7 @@ metadata:
 | 12 | 「现在有什么热门主题」 | `/api/v1/tags` | — | count/selectedCount 降序 Top N |
 | 13 | 「本周有哪些 HR 政策？」「本周 HR 要闻回顾」 | `/api/v1/reports` | `kind=weekly` | 当期周报（lead 综述 + 分区 + 统计）；跨多期先取列表再按期次取详情 |
 | 14 | 「给我看上月 HR 月报」「上个月盘点」 | `/api/v1/reports` | `kind=monthly` → `/api/v1/reports/{key}` | 先列表定位目标期次（periodStart/periodEnd），再取该期详情 |
+| 15 | 「现在 HR 圈的热点事件？」「最近大家在讨论什么」 | `/api/v1/hot-topics` | — | 热点榜 Top 10（rank/heat 降序 + badges 状态徽标），每条带 `links.hrhot` 站内事件页 |
 
 Base URL 统一为 `https://hrhot.gaiying.top/api/v1`；端点参数、字段语义与错误处理详见 `references/api.md` 与 `references/errors.md`。
 
