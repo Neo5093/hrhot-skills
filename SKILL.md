@@ -38,9 +38,9 @@ metadata:
 
 | # | 用户意图（示例问法） | 默认端点 | 关键参数 | 输出要点 |
 | --- | --- | --- | --- | --- |
-| 1 | 「过去 24 小时 HR 圈最重要的 5 件事」「今天 HR 有什么大事」 | `/api/v1/items` | `mode=selected&window=24h&limit=5` | 5 条简报（标题+一句话+来源+评分+链接） |
+| 1 | 「过去 24 小时 HR 圈最重要的 5 件事」「今天 HR 有什么大事」「今天有什么新鲜事」 | `/api/v1/items` | `mode=selected&window=24h&publishedWithin=7d&limit=5` | 5 条简报（标题+一句话+来源+评分+链接） |
 | 2 | 「本周 HR 大事」「最近一周汇总」 | `/api/v1/items` | `mode=selected&window=7d&limit=10` | 按 category 分组的 10 条 |
-| 3 | 24h 精选不足 3 条时的降级 | `/api/v1/items` | `mode=selected&window=7d&limit=5` | **必须显式说明实际时间窗是 7 天**，不得冒充 24h |
+| 3 | 24h 精选不足 3 条时的降级 | `/api/v1/items` | `mode=selected&window=7d&publishedWithin=7d&limit=5` | **必须显式说明实际时间窗是 7 天**，不得冒充 24h |
 | 4 | 「今天的 HR 日报」 | `/api/v1/dailies/{今天}` | `date=YYYY-MM-DD`（Asia/Shanghai） | 导语 + 各分区 + flashes |
 | 5 | 「最近有哪些日报」 | `/api/v1/dailies` | `limit=7` | 日期 + 收录/精选统计 |
 | 6 | 「竞业限制 / 社保基数 / 延迟退休相关的新闻」 | `/api/v1/items` | `mode=all&tag=<受控词表规范词>`；查无结果降级 `mode=all&q=<词>` | 主题时间线（按日期分组） |
@@ -59,6 +59,8 @@ Base URL 统一为 `https://hrhot.gaiying.top/api/v1`；端点参数、字段语
 **报告端点提示**：#13 / #14 走 `GET /api/v1/reports`（周报/月报，详见 `references/api.md` 第 7 节）。`lead` 为 AI 生成综述，引用前必须回原文核对。
 
 **受控词表提示**：`tag` 必须使用受控词表规范词（如「社会保险法」「劳动合同法」「工伤保险条例」「带薪年休假」「人力资源市场暂行条例」）；可用 `/api/v1/tags` 发现热门主题的规范写法，不要自造同义词（如「五险一金」「劳动法」均非规范 tag，应走 `q` 搜索）。
+
+**发布时间窗提示（V2.2.x）**：`publishedWithin=7d|30d|90d` 按**原文发布时间**（publishedAt）过滤，与 `window`（收录时间口径）正交、可组合；`publishedAt` 缺失的条目会被排除。「今天 / 新鲜事」类用例建议组合使用（如 `window=24h&publishedWithin=7d`），避免补录旧文（发布远早于收录）混入「今天」的答案。详见 `references/api.md` 第 3 节。
 
 ## 四、输出格式模板（Agent 须套用）
 

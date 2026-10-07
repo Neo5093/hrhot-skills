@@ -51,6 +51,7 @@
 | --- | --- | --- | --- | --- |
 | `mode` | enum | `selected` | `selected` \| `all` | selected=仅精选；all=全部已收录 |
 | `window` | enum | 无（不过滤） | `24h` \| `72h` \| `7d` \| `30d` | 按 `discoveredAt` 过滤：`discoveredAt >= now - window`。**「过去 24 小时」类问题的核心参数** |
+| `publishedWithin` | enum | 无（不过滤） | `7d` \| `30d` \| `90d` | **发布时间窗**（V2.2.x 新增）：按 `publishedAt` 过滤，`publishedAt >= now - publishedWithin`。与 `window`（收录时间口径）**正交、可组合**（如 `window=24h&publishedWithin=7d`）；`publishedAt` 缺失或不可解析的条目在此参数生效时**被排除**（无法证明新鲜度）。「今天有什么新鲜事」类问题建议与 `window` 组合使用，可排除补录旧文（发布时间远早于收录时间的条目） |
 | `category` | enum | 无 | 七分类之一（见第 8 节） | 非法值 400 `invalid-param` |
 | `region` | string | 无 | 自由文本（现存值：全国 / 省名 / 中国香港 / 中国澳门 / 跨境） | 与站内一致，不做枚举校验 |
 | `tag` | string | 无 | 1-40 字，大小写不敏感精确匹配 | 主题精确过滤，须用受控词表规范词 |
@@ -69,6 +70,7 @@
     "mode": "selected",
     "window": "24h",
     "windowResolved": { "from": "2026-09-19T08:00:00.000Z", "to": "2026-09-20T08:00:00.000Z" },
+    "publishedWithin": null,
     "category": null,
     "region": null,
     "tag": null,
@@ -112,7 +114,7 @@
 
 | HTTP | type | 触发条件 |
 | --- | --- | --- |
-| 400 | `invalid-param` | mode/category/window/q/tag/limit 非法，或未知参数 |
+| 400 | `invalid-param` | mode/category/window/publishedWithin/q/tag/limit 非法，或未知参数 |
 | 400 | `invalid-cursor` | cursor 损坏或跨查询复用 |
 | 429 | `rate-limited` | 平台限流触发（P2），带 `Retry-After` 头 |
 | 500 | `internal` | 未捕获异常 |
