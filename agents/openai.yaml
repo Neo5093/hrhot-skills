@@ -1,6 +1,6 @@
 # Codex 兼容声明：本 skill 为零脚本 skill，能力全部为对 HRHOT 公开只读 API 的调用规范
 name: hrhot
-version: 2.0.0
+version: 2.0.1
 entry: SKILL.md
 interface:
   display_name: HRHOT HR 资讯

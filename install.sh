@@ -27,7 +27,7 @@
 set -u
 
 SKILL_NAME="hrhot"
-SKILL_VERSION="2.0.0"
+SKILL_VERSION="2.0.1"
 BASE_URL_DEFAULT="https://hrhot.gaiying.top/hrhot-skill"
 
 # 基地址优先级: --base 参数 > HRHOT_SKILL_BASE_URL > BASE_URL > 默认值

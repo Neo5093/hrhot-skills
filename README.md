@@ -60,7 +60,7 @@ curl -fsSL https://hrhot.gaiying.top/hrhot-skill/install.sh | bash -s -- --targe
 
 ```bash
 curl -fsSL https://hrhot.gaiying.top/hrhot-skill/install.sh -o install.sh
-sha256sum install.sh   # 应输出：f610a9bfc122d4f141e2c94ec9ffbd4e7be43a53ba42dcc5768ebe0a33ee9cf0
+sha256sum install.sh   # 应输出：e108d413be865e57ade29111d70f7388c4593e78112ae2cf371a247a5ba881c2
 bash install.sh --target claude
 ```
 
@@ -68,10 +68,10 @@ bash install.sh --target claude
 
 ```bash
 git clone https://github.com/Neo5093/hrhot-skills.git ~/.agents/skills/hrhot
-git -C ~/.agents/skills/hrhot checkout v2.0.0
+git -C ~/.agents/skills/hrhot checkout v2.0.1
 ```
 
-（Windows 用 Git Bash；克隆后固定到发布 tag `v2.0.0`，该 tag 的内容与站内托管副本字节一致——避免仓库主分支变动导致装到未审计版本。WorkBuddy 用户将目标目录换为 `~/.workbuddy/skills/hrhot`。）
+（Windows 用 Git Bash；克隆后固定到发布 tag `v2.0.1`，该 tag 的内容与站内托管副本字节一致——避免仓库主分支变动导致装到未审计版本。WorkBuddy 用户将目标目录换为 `~/.workbuddy/skills/hrhot`。）
 
 ## 能做什么 / 不能做什么
 
@@ -114,6 +114,7 @@ hrhot-skills/
 
 ## 版本说明
 
+- **2.0.1**（2026-10-12）：`GET /api/v1/items` 新增 `publishedWithin=7d|30d|90d` 参数（**发布时间窗**，与 window 收录时间口径正交可组合；publishedAt 缺失的条目在参数生效时排除）——「今天有什么新鲜事」类查询建议携带 `publishedWithin=7d`，避免补录旧文进入时效性答案；意图路由 #1/#3 用例已同步。
 - **2.0.0**（2026-09-29）：与 HRHOT 2.0 大迭代对齐——意图路由表新增周报/月报用例（#13/#14，`/api/v1/reports`）；`references/api.md` 新增第 7 节报告端点合同（**随 HRHOT 2.1.0 上线生效，上线前勿调用**）；能力清单与触发描述补充报告中心。零脚本定位、安全边界与既有端点结构不变。
 
 ## License 与合规声明

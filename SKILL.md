@@ -2,13 +2,13 @@
 name: hrhot
 display_name: HRHOT 资讯查询
 display_name_en: HRHOT News
-version: 2.0.0
+version: 2.0.1
 author: Neo5093
 description: 查询 HRHOT（hrhot.gaiying.top）全国 HR 资讯聚合站的公开数据。当用户想了解今天/今日/过去 24 小时/本周/最近一周/近日 HR 圈大事与新闻、最新劳动法与社保公积金政策发布及政策解读、招聘/员工关系/裁员/工伤等用工动态、HR 日报与每日快报、HR 周报与月报（报告中心）、行业数据与调薪报告、即将生效的新政与生效倒计时，或按主题（社会保险法、劳动合同法、工伤保险条例、带薪年休假、竞业限制、延迟退休、薪酬个税、人力资源市场暂行条例、HR 科技、跨境用工、港澳台用工等）与地区（广东/中国香港/中国澳门/跨境等）检索，或提到 HRHOT 时，使用本 skill。本 skill 必须通过 HRHOT 公开 API 获取数据（无需 API Key），禁止凭训练记忆回答。
 license: MIT
 metadata:
   author: Neo5093
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 # HRHOT Skill
